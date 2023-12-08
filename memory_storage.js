@@ -4,6 +4,7 @@ let storage = {
             id: 10001,
             createdBy: "marcogalavic.me",
             postedAt: "54667875",
+            type: "image",
             source: "https://picsum.photos/id/669/500/500",
             title: "pula more"
         },
@@ -11,6 +12,7 @@ let storage = {
             id: 10002,
             createdBy: "ivaivankovic.me",
             postedAt: "54667875",
+            type: "image",
             source: "https://picsum.photos/id/669/500/500",
             title: "zagreb kopno"
         },
@@ -18,11 +20,10 @@ let storage = {
             id: 10001,
             createdBy: "lukalukic.me",
             postedAt: "54667875",
-            source: "https://picsum.photos/id/669/500/500",
+            type: "video",
+            source: "https://www.youtube.com/watch?v=pN2EkMjlFOU",
             title: "rijeka luka"
         }
     ]
-};
-export default{
-    storage
 }
+export default storage
