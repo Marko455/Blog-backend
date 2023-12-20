@@ -1,3 +1,8 @@
+/* 
+Pokušaj Implementacija autentifikacije sa vježbi
+ DALJNE ISTRAŽITI bcrypt
+ PROBATI ZAMIJENITI bcrypt i crypto sa JWT
+*/
 import { User, users } from "../models/userModel.js"; 
 import bcrypt from 'bcrypt'
 import crypto from 'crypto';
