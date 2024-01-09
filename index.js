@@ -3,8 +3,8 @@ import cors from "cors"
 import storage from "./memory_storage.js"  // improvizacija baze
 import requestTime from "./middleware/requestTime.js"
 import jwt from "jsonwebtoken";
-import { authenticateToken } from './middlewares/authenticateToken.js'
-import { checkEmailLength } from "./middlewares/abac.js"; 
+//import { authenticateToken } from './middlewares/authenticateToken.js'
+//import { checkEmailLength } from "./middlewares/abac.js"; 
 const app = express();
 app.use(cors())
 const port = 3000;

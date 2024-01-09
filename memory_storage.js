@@ -1,5 +1,4 @@
-
-const { MongoClient, ServerApiVersion } = require('mongodb');
+import { MongoClient, ServerApiVersion } from 'mongodb';
 const uri = "mongodb+srv://Marko:mg14012003@cluster0.ppm8yic.mongodb.net/?retryWrites=true&w=majority";
 
 const client = new MongoClient(uri, {
@@ -21,6 +20,31 @@ async function run() {
 }
 run().catch(console.dir);
 
+async function connectToDatabase() {
+  try {
+    await client.connect();
+    console.log('Connected to MongoDB Atlas');
+  } catch (err) {
+    console.error('Error connecting to MongoDB Atlas:', err);
+  }
+}
+
+module.exports = { connectToDatabase };
+
+async function getDocumentById(id) {
+  const database = client.db('PostsProba');
+  const collection = database.collection('PostsProba');
+
+  try {
+    const document = await collection.findOne({ id: id });
+    return document;
+  } catch (err) {
+    console.error('Error retrieving document from MongoDB:', err);
+    return null;
+  }
+}
+
+module.exports = { connectToDatabase, getDocumentById };
 
 // PLAN B
 let storage = {
