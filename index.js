@@ -2,12 +2,19 @@ import express from "express"
 import cors from "cors"
 import storage from "./memory_storage.js"  // improvizacija baze
 import requestTime from "./middleware/requestTime.js"
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-//import { authenticateToken } from './middlewares/authenticateToken.js'
-//import { checkEmailLength } from "./middlewares/abac.js"; 
+//import bcrypt
 const app = express();
 app.use(cors())
 const port = 3000;
+app.use(express.json())
+import User from "./models/User.js"
+// Povezivanje na MongoDB Atlas
+import db from "./connection.js";
+let userCollection = db.collection("Users")
+let postsCollection = db.collection("Posts")
+
 
 app.get("/posts", (req, res)=>{
     let title = req.query.title
@@ -23,21 +30,45 @@ app.get("/posts", (req, res)=>{
     res.status(201).send()
 });
 
+app.get('/signup', (req, res) => {
+  res.sendFile(__dirname + '/public/Signup.vue');
+  res.status(201).send()
+});
+
+app.post('/signup', async (req, res) => {
+  debugger
+  userCollection
+  const { email, password } = req.body;
+
+  try {
+    const user = await userCollection.insertOne({email, password});
+    res.status(201).json(user);
+  }
+  catch(err) {
+    console.log(err);
+    res.status(400).send('pogreska, user nije kreiran');
+  }
+ 
+});
+
 app.get('/login', (req, res) => {
-    res.sendFile(__dirname + '/public/login.vue');
-    res.status(201).send()
+  
+}); 
+ 
+app.post('/login', async (req, res) => {
+  const { email, password} = req.body
+  console.log(email, password);
+  res.send('user login');
+  res.status(201).send()
 });
 
 app.post('/register', (req, res) => {
-    res.sendFile(__dirname + '/public/register.vue');
-    res.status(201).send()
+    
 });
 
 app.patch('/posts/:postId', (req, res) => {
     const postId = req.params.postId;
     const updatedPost = req.body;
-  
-    
     const index = storage.posts.findIndex(post => post.id === postId);
   
     if (index !== -1) {  // U slučaju da imam indeks 0 za prvu blog objavu
