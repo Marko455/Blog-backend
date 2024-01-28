@@ -1,4 +1,7 @@
 
+import db from "./connection.js";
+let postsCollection = db.collection("Posts")
+
 // PLAN B
 let storage = {
     posts: [
@@ -28,4 +31,7 @@ let storage = {
         }
     ]
 }
-export default storage
+
+let storage2 = postsCollection
+
+export {storage, storage2};

@@ -10,5 +10,6 @@ try {
 } catch (e) {
 	console.error(e);
 }
+debugger
 let db = conn.db("PostsProba");
 export default db;

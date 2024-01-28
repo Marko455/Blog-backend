@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
 })
 
 userSchema.post('save', function(doc, next){
-    console.log("Korisnik je kreiran je spremljen", doc);
+    console.log("Korisnik je kreiran i spremljen", doc);
     next();
 })
 

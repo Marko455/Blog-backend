@@ -1,10 +1,10 @@
 import express from "express"
 import cors from "cors"
-import storage from "./memory_storage.js"  // improvizacija baze
+import {storage} from "./memory_storage.js"  // improvizacija baze
+//import {storage2} from "./memory_storage.js"  // objave sa mongoDB-a
 import requestTime from "./middleware/requestTime.js"
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-//import bcrypt
 const app = express();
 app.use(cors())
 const port = 3000;
@@ -16,44 +16,79 @@ let userCollection = db.collection("Users")
 let postsCollection = db.collection("Posts")
 
 
-app.get("/posts", (req, res)=>{
-    let title = req.query.title
-    let postovi = storage.posts
-    
-    if(title){
-     postovi = postovi.filter(e => {
-        return e.title.indexOf(title) >= 0
-     })
-    }
+app.get("/kolekcija", async (req, res) => {
+  try {
+    const postovi = await postsCollection.find({}).toArray();
+    console.log(postovi);
 
-    res.json(postovi)
-    res.status(201).send()
+    res.json(postovi);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
-app.get('/signup', (req, res) => {
-  res.sendFile(__dirname + '/public/Signup.vue');
-  res.status(201).send()
-});
 
 app.post('/signup', async (req, res) => {
   debugger
   userCollection
   const { email, password } = req.body;
+  const existingUser = await userCollection.findOne({ email });
 
+  if (existingUser) {
+    return res.status(400).send('Email je vec koristen');
+  }
+
+  if (password.length < 6) {
+    return res.status(400).send('Lozinka mora biti minimalno 6 znakova');
+  }
+
+  let hash_password = await bcrypt.hash(password, 10)
   try {
-    const user = await userCollection.insertOne({email, password});
+    const user = await userCollection.insertOne({email, hash_password});
     res.status(201).json(user);
   }
   catch(err) {
     console.log(err);
-    res.status(400).send('pogreska, user nije kreiran');
+    res.status(400).send('Pogreska, korisnik nije kreiran');
   }
  
 });
 
-app.get('/login', (req, res) => {
-  
-}); 
+
+app.get('/login', async (req, res) => {
+  const { email, password } = req.query;
+
+  try {
+    const user = await userCollection.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Pogresan email ili lozinka' });
+    }
+
+    console.log(email);
+    console.log(password);
+    console.log(user.hash_password);
+
+    if (!user.hash_password) {
+      return res.status(500).send('Netocni korisnicki podaci');
+    }
+
+    const passwordMatch = bcrypt.compare(password, user.hash_password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Pogresan email ili lozinka' });
+    }
+
+    const token = jwt.sign({ email: user.email }, 'your_secret_key', { expiresIn: '60s' });
+
+    res.status(200).json({ token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
  
 app.post('/login', async (req, res) => {
   const { email, password} = req.body
@@ -62,26 +97,19 @@ app.post('/login', async (req, res) => {
   res.status(201).send()
 });
 
-app.post('/register', (req, res) => {
-    
+app.get('/logout', (req, res) => {
+  res.redirect('/login');
 });
 
+
+/*
 app.patch('/posts/:postId', (req, res) => {
-    const postId = req.params.postId;
-    const updatedPost = req.body;
-    const index = storage.posts.findIndex(post => post.id === postId);
-  
-    if (index !== -1) {  // U slučaju da imam indeks 0 za prvu blog objavu
-      storage.posts[index] = {       //Ako se pronađe odgovarajuća objava, ovaj redak ažurira post spajanjem postojećih podataka o postu s ažuriranim podacima o postu.
-        ...storage.posts[index],     //Koristi operator spread (...) za stvaranje novog objekta koji kombinira 
-        ...updatedPost               // svojstva postojeće objave (storage.posts[index]) sa svojstvima ažurirane objave (updatedPost).
-      };                             // DALNJE ISTRAŽITI
-      res.json({ message: 'Blog objava ažurirana' });
-    } else {
-      res.status(404).json({ error: 'Blog objava nije pronadena' });
-    }
-  });
-  
+Ruta za uređivanje već napravljenih objava
+}
+*/
+
+
+//console.log(storage2)    //ispis objava sa mongoDB-a za provjeru
 //Pokušaj rada sa middleware-om
 app.use(requestTime);
 
@@ -93,3 +121,9 @@ app.get('/time', (req, res) => {
 app.listen(port, ()=> console.log('Slušam na portu: ${port}'));
 console.log("Tip podatka storage:", typeof storage.posts);
 
+/* Podaci za BODY Postman-a
+{
+    "email": "marko@google.com",
+    "password": "$2b$10$kFREqjiTAW/2I0oxkg.MDOnFnwA6B7NBV2sGGyV.XjM7KkLpNyMhu"
+}
+*/
