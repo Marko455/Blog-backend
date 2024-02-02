@@ -9,7 +9,7 @@ const app = express();
 app.use(cors())
 const port = 3000;
 app.use(express.json())
-import User from "./models/User.js"
+import { ObjectId } from 'mongodb';
 // Povezivanje na MongoDB Atlas
 import db from "./connection.js";
 let userCollection = db.collection("Users")
@@ -22,6 +22,84 @@ app.get("/kolekcija", async (req, res) => {
     console.log(postovi);
 
     res.json(postovi);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+app.post("/kolekcija", async (req, res) => {
+  try {
+    const { title, source, type, postedAt, createdBy } = req.body;
+
+    const novaObjava = {
+      title,
+      source,
+      type,
+      postedAt,
+      createdBy
+    };
+
+    const objava = await postsCollection.insertOne(novaObjava);
+
+    res.status(201).json(objava);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+app.patch("/kolekcija/:id", async (req, res) => {
+  try {
+    const blogId = req.params.id;
+
+    if (!ObjectId.isValid(blogId)) {
+      return res.status(400).json({ error: "Netocan blog ID" });
+    }
+
+    const { title, source, type, postedAt, createdBy } = req.body;
+
+    const updatedFields = {};
+    if (title) updatedFields.title = title;
+    if (source) updatedFields.source = source;
+    if (type) updatedFields.type = type;
+    if (postedAt) updatedFields.postedAt = postedAt;
+    if (createdBy) updatedFields.createdBy = createdBy;
+
+    const result = await postsCollection.updateOne(
+      { _id: new ObjectId(blogId) },
+      { $set: updatedFields }
+    );
+
+    if (result.modifiedCount === 1) {
+      res.json({ message: "Blog je uspijesno azuriran" });
+    } else {
+      res.status(404).json({ error: "Blog nije pronaden" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+app.delete("/kolekcija/:id", async (req, res) => {
+  try {
+    const blogId = req.params.id;
+
+    if (!ObjectId.isValid(blogId)) {
+      return res.status(400).json({ error: "Netocan blog ID" });
+    }
+
+    const result = await postsCollection.deleteOne({ _id: new ObjectId(blogId) });
+
+    if (result.deletedCount === 1) {
+      res.json({ message: "Blog je uspijesno izbrisan" });
+    } else {
+      res.status(404).json({ error: "Blog nije pronaden" });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -89,24 +167,10 @@ app.get('/login', async (req, res) => {
   }
 });
 
- 
-app.post('/login', async (req, res) => {
-  const { email, password} = req.body
-  console.log(email, password);
-  res.send('user login');
-  res.status(201).send()
-});
 
 app.get('/logout', (req, res) => {
   res.redirect('/login');
 });
-
-
-/*
-app.patch('/posts/:postId', (req, res) => {
-Ruta za uređivanje već napravljenih objava
-}
-*/
 
 
 //console.log(storage2)    //ispis objava sa mongoDB-a za provjeru
@@ -126,4 +190,8 @@ console.log("Tip podatka storage:", typeof storage.posts);
     "email": "marko@google.com",
     "password": "$2b$10$kFREqjiTAW/2I0oxkg.MDOnFnwA6B7NBV2sGGyV.XjM7KkLpNyMhu"
 }
+
+test prijave:
+mario@google.com
+mariomario
 */
