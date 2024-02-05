@@ -1,7 +1,6 @@
 import express from "express"
 import cors from "cors"
 import {storage} from "./memory_storage.js"  // improvizacija baze
-//import {storage2} from "./memory_storage.js"  // objave sa mongoDB-a
 import requestTime from "./middleware/requestTime.js"
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -16,6 +15,7 @@ let userCollection = db.collection("Users")
 let postsCollection = db.collection("Posts")
 
 
+// Sve objave:
 app.get("/kolekcija", async (req, res) => {
   try {
     const postovi = await postsCollection.find({}).toArray();
@@ -29,6 +29,7 @@ app.get("/kolekcija", async (req, res) => {
 });
 
 
+// Izrada objave:
 app.post("/kolekcija", async (req, res) => {
   try {
     const { title, source, type, postedAt, createdBy } = req.body;
@@ -51,6 +52,7 @@ app.post("/kolekcija", async (req, res) => {
 });
 
 
+// Uređivanje objave:
 app.patch("/kolekcija/:id", async (req, res) => {
   try {
     const blogId = req.params.id;
@@ -85,6 +87,7 @@ app.patch("/kolekcija/:id", async (req, res) => {
 });
 
 
+// Brisanje objave:
 app.delete("/kolekcija/:id", async (req, res) => {
   try {
     const blogId = req.params.id;
@@ -107,6 +110,8 @@ app.delete("/kolekcija/:id", async (req, res) => {
 });
 
 
+
+// Registracija novog korisnika:
 app.post('/signup', async (req, res) => {
   debugger
   userCollection
@@ -134,6 +139,7 @@ app.post('/signup', async (req, res) => {
 });
 
 
+// Prijava korisnika:
 app.get('/login', async (req, res) => {
   const { email, password } = req.query;
 
@@ -168,12 +174,12 @@ app.get('/login', async (req, res) => {
 });
 
 
+// Odjava korisnika:
 app.get('/logout', (req, res) => {
   res.redirect('/login');
 });
 
 
-//console.log(storage2)    //ispis objava sa mongoDB-a za provjeru
 //Pokušaj rada sa middleware-om
 app.use(requestTime);
 
