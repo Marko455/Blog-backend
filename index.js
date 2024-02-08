@@ -32,14 +32,16 @@ app.get("/kolekcija", async (req, res) => {
 // Izrada objave:
 app.post("/kolekcija", async (req, res) => {
   try {
-    const { title, source, type, postedAt, createdBy } = req.body;
+    const { title, source, video, postedAt, createdBy, likes, dislikes} = req.body;
 
     const novaObjava = {
       title,
       source,
-      type,
+      video,
       postedAt,
-      createdBy
+      createdBy,
+      likes: 0,
+      dislikes: 0
     };
 
     const objava = await postsCollection.insertOne(novaObjava);
@@ -61,14 +63,17 @@ app.patch("/kolekcija/:id", async (req, res) => {
       return res.status(400).json({ error: "Netocan blog ID" });
     }
 
-    const { title, source, type, postedAt, createdBy } = req.body;
+    const { title, source, video, postedAt, createdBy, likes, dislikes } = req.body;
 
     const updatedFields = {};
     if (title) updatedFields.title = title;
     if (source) updatedFields.source = source;
-    if (type) updatedFields.type = type;
+    if (video) updatedFields.video = video;
     if (postedAt) updatedFields.postedAt = postedAt;
     if (createdBy) updatedFields.createdBy = createdBy;
+    if (likes) updatedFields.likes = likes;
+    if (dislikes) updatedFields.dislikes = dislikes;
+
 
     const result = await postsCollection.updateOne(
       { _id: new ObjectId(blogId) },
@@ -108,7 +113,6 @@ app.delete("/kolekcija/:id", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 
 // Registracija novog korisnika:
@@ -180,6 +184,24 @@ app.get('/logout', (req, res) => {
 });
 
 
+app.post('/like/:id', (req, res) => {
+  const postId = req.params.id;
+  postsCollection.updateOne({ _id: new ObjectId(postId) }, { $inc: { likes: 1 } }, (err, result) => {
+    if (err) return res.status(500).send(err);
+    res.send('Post liked');
+  });
+});
+
+
+app.post('/dislike/:id', (req, res) => {
+  const postId = req.params.id;
+  postsCollection.updateOne({ _id: mongodb.ObjectID(postId) }, { $inc: { dislikes: 1 } }, (err, result) => {
+    if (err) return res.status(500).send(err);
+    res.send('Post disliked');
+  });
+});
+
+
 //Pokušaj rada sa middleware-om
 app.use(requestTime);
 
@@ -187,8 +209,8 @@ app.get('/time', (req, res) => {
     let responseText = 'Hello World!<br>'
     responseText += `<small>Requested at: ${req.requestTime}</small>`
     res.send(responseText)
-  })
-app.listen(port, ()=> console.log('Slušam na portu: ${port}'));
+})
+app.listen(port, () => console.log(`Slušam na portu: ${port}`));
 console.log("Tip podatka storage:", typeof storage.posts);
 
 /* Podaci za BODY Postman-a
