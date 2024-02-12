@@ -29,6 +29,24 @@ app.get("/kolekcija", async (req, res) => {
 });
 
 
+// Samo određena objava po ID-u
+app.get("/kolekcija/:id", async (req, res) => {
+  try {
+    const postId = req.params.id;
+    console.log("postId:", postId);
+    const post = await postsCollection.findOne({ _id: new ObjectId(postId) });
+    if (!post) {
+      return res.status(404).json({ error: "Blog post not found" });
+    }
+    res.json(post);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+
 // Izrada objave:
 app.post("/kolekcija", async (req, res) => {
   try {
@@ -195,7 +213,7 @@ app.post('/like/:id', (req, res) => {
 
 app.post('/dislike/:id', (req, res) => {
   const postId = req.params.id;
-  postsCollection.updateOne({ _id: mongodb.ObjectID(postId) }, { $inc: { dislikes: 1 } }, (err, result) => {
+  postsCollection.updateOne({ _id: new ObjectId(postId) }, { $inc: { dislikes: 1 } }, (err, result) => {
     if (err) return res.status(500).send(err);
     res.send('Post disliked');
   });
@@ -211,8 +229,6 @@ app.get('/time', (req, res) => {
     res.send(responseText)
 })
 app.listen(port, () => console.log(`Slušam na portu: ${port}`));
-console.log("Tip podatka storage:", typeof storage.posts);
-
 /* Podaci za BODY Postman-a
 {
     "email": "marko@google.com",
