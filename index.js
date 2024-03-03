@@ -29,6 +29,20 @@ app.get("/kolekcija", async (req, res) => {
 });
 
 
+// Svi korisnici:
+app.get("/korisnici", async (req, res) => {
+  try {
+    const korisnici = await userCollection.find({}).toArray();
+    console.log(korisnici);
+
+    res.json(korisnici);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
 // Samo određena objava po ID-u
 app.get("/kolekcija/:id", async (req, res) => {
   try {
@@ -50,12 +64,13 @@ app.get("/kolekcija/:id", async (req, res) => {
 // Izrada objave:
 app.post("/kolekcija", async (req, res) => {
   try {
-    const { title, source, video, postedAt, createdBy, likes, dislikes} = req.body;
+    const { title, source, video, description, postedAt, createdBy, likes, dislikes} = req.body;
 
     const novaObjava = {
       title,
       source,
       video,
+      description,
       postedAt,
       createdBy,
       likes: 0,
@@ -81,12 +96,13 @@ app.patch("/kolekcija/:id", async (req, res) => {
       return res.status(400).json({ error: "Netocan blog ID" });
     }
 
-    const { title, source, video, postedAt, createdBy, likes, dislikes } = req.body;
+    const { title, source, video, description, postedAt, createdBy, likes, dislikes } = req.body;
 
     const updatedFields = {};
     if (title) updatedFields.title = title;
     if (source) updatedFields.source = source;
     if (video) updatedFields.video = video;
+    if (description) updatedFields.description = description;
     if (postedAt) updatedFields.postedAt = postedAt;
     if (createdBy) updatedFields.createdBy = createdBy;
     if (likes) updatedFields.likes = likes;
@@ -186,7 +202,7 @@ app.get('/login', async (req, res) => {
       return res.status(401).json({ error: 'Pogresan email ili lozinka' });
     }
 
-    const token = jwt.sign({ email: user.email }, 'your_secret_key', { expiresIn: '60s' });
+    const token = jwt.sign({ email: user.email }, 'your_secret_key', { expiresIn: '1h' });
 
     res.status(200).json({ token });
   } catch (err) {
