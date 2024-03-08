@@ -64,7 +64,7 @@ app.get("/kolekcija/:id", async (req, res) => {
 // Izrada objave:
 app.post("/kolekcija", async (req, res) => {
   try {
-    const { title, source, video, description, postedAt, createdBy, likes, dislikes} = req.body;
+    const { title, source, video, description, postedAt, createdBy, likes, dislikes, comment} = req.body;
 
     const novaObjava = {
       title,
@@ -74,7 +74,8 @@ app.post("/kolekcija", async (req, res) => {
       postedAt,
       createdBy,
       likes: 0,
-      dislikes: 0
+      dislikes: 0,
+      comment
     };
 
     const objava = await postsCollection.insertOne(novaObjava);
@@ -236,6 +237,31 @@ app.post('/dislike/:id', (req, res) => {
 });
 
 
+// Komentiranje
+app.patch('/kolekcija/:id', async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const { comment } = req.body;
+
+    if (!ObjectId.isValid(postId)) {
+      return res.status(400).json({ error: "Netocan blog ID" });
+    }
+
+    const result = await postsCollection.updateOne(
+      { _id: new ObjectId(postId) },
+      { $set: { comment: comment } }
+    );
+
+    if (result.modifiedCount === 1) {
+      res.json({ message: "Komentar uspijesno dodan" });
+    } else {
+      res.status(404).json({ error: "Blog nije pronaden" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 //Pokušaj rada sa middleware-om
 app.use(requestTime);
 
