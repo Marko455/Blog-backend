@@ -109,7 +109,6 @@ app.patch("/kolekcija/:id", async (req, res) => {
     if (likes) updatedFields.likes = likes;
     if (dislikes) updatedFields.dislikes = dislikes;
 
-
     const result = await postsCollection.updateOne(
       { _id: new ObjectId(blogId) },
       { $set: updatedFields }
@@ -154,7 +153,7 @@ app.delete("/kolekcija/:id", async (req, res) => {
 app.post('/signup', async (req, res) => {
   debugger
   userCollection
-  const { email, password } = req.body;
+  const { ime, prezime, email, password } = req.body;
   const existingUser = await userCollection.findOne({ email });
 
   if (existingUser) {
@@ -167,7 +166,7 @@ app.post('/signup', async (req, res) => {
 
   let hash_password = await bcrypt.hash(password, 10)
   try {
-    const user = await userCollection.insertOne({email, hash_password});
+    const user = await userCollection.insertOne({ime, prezime, email, hash_password});
     res.status(201).json(user);
   }
   catch(err) {
@@ -238,9 +237,9 @@ app.post('/dislike/:id', (req, res) => {
 
 
 // Komentiranje
-app.patch('/kolekcija/:id', async (req, res) => {
+app.patch('/komentiraj/:id', async (req, res) => {
   try {
-    const postId = req.params.id;
+    const postId = req.params.id; 
     const { comment } = req.body;
 
     if (!ObjectId.isValid(postId)) {
@@ -248,7 +247,7 @@ app.patch('/kolekcija/:id', async (req, res) => {
     }
 
     const result = await postsCollection.updateOne(
-      { _id: new ObjectId(postId) },
+      { _id: new ObjectId(postId) },  
       { $set: { comment: comment } }
     );
 
@@ -262,6 +261,8 @@ app.patch('/kolekcija/:id', async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+
 //Pokušaj rada sa middleware-om
 app.use(requestTime);
 
