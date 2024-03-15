@@ -11,5 +11,5 @@ try {
 	console.error(e);
 }
 debugger
-let db = conn.db("PostsProba");
+let db = client.db("PostsProba");
 export default db;
